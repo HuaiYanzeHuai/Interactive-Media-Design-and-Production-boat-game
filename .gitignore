@@ -1,0 +1,65 @@
+# ------------------------------
+# 系统/软件相关（匹配你输出里的所有无关文件）
+# ------------------------------
+# Windows 快捷方式
+*.lnk
+# Windows 桌面配置
+desktop.ini
+# URL 快捷方式
+*.url
+# 安装包/可执行文件
+*.EXE
+*.msi
+*.zip
+# 文档/演示文件
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+*.pdf
+*.txt
+# 3D/设计文件
+*.blend
+*.blend1
+*.STL
+*.SLDPRT
+*.3mf
+*.svg
+*.webp
+# 软件配置文件夹
+.accelerate/
+.vscode/
+# 杂项文件夹（匹配你输出里的非项目文件夹）
+CodePPT/
+PI-Math-Code-main/
+PIMATH/
+car1/
+demo/
+fileoperate/
+hyz/
+javalearing/
+learingCangjie/
+new/
+newone/
+oracleJdk-25/
+puzzlePPT/
+steam/
+test/
+# 中文命名的无关文件夹（按需添加，或用通配符）
+*文档*/
+*学习*/
+*模型*/
+*软件*/
+# ------------------------------
+# 通用忽略规则（补充）
+# ------------------------------
+# Mac 系统文件
+.DS_Store
+# 临时文件
+~$*
+# 日志/缓存
+*.log
+cache/
+tmp/
