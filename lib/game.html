@@ -1,11 +1,293 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>正多边形海战 - PVP</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      color: #e8f0ff;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      /* 移除body背景（兜底） */
+      background: none;
+    }
+
+    #top-bar {
+      position: absolute;
+      top: 10px;
+      left: 0;
+      right: 0;
+      height: 120px;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 3vw;
+      z-index: 20;
+      /* 移除顶部栏背景 */
+      background: none;
+    }
+
+    .player-ships {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      /* 移除玩家船只容器背景 */
+      background: none;
+    }
+
+    .ship-btn {
+      width: 8vw;
+      min-width: 90px;
+      max-width: 160px;
+      padding: 40px 0 30px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: white;
+      text-align: center;
+      border: 1px solid #555;
+      border-radius: 5px;
+      cursor: default;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s;
+    }
+
+    .ship-btn img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+    }
+
+    /* 保留船只按钮的背景色 */
+    .left-inactive  { background: #8b6914; } /* 暗黄色 */
+    .right-inactive { background: #1b5e20; } /* 暗绿色  */
+    .left-active    { background: #ffc107; color: #000; box-shadow: 0 0 20px #ffeb3b; }
+    .right-active   { background: #4caf50; color: #000; box-shadow: 0 0 20px #8bc34a; }
+
+    #canvas-wrapper {
+      position: absolute;
+      inset: 140px 0 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* 移除画布容器的径向渐变背景 */
+      background: none;
+    }
+
+    #game-canvas {
+      width:  min(92vmin, 92vh);
+      height: min(92vmin, 92vh);
+      border: 1px solid #445;
+      border-radius: 12px;
+      /* 移除画布黑色背景 */
+      background: none;
+    }
+
+    #action-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 50px;
+      z-index: 20;
+      /* 移除行动栏背景 */
+      background: none;
+    }
+
+    .action-btn {
+      padding: 16px 52px;
+      font-size: 1.35rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    /* 保留底部行动按钮的背景色 */
+    #btn-move   { background: #0288d1; }
+    #btn-attack { background: #d32f2f; }
+    #btn-skip   { background: #7b1fa2; }
+
+    .action-btn:hover:not(:disabled) {
+      filter: brightness(1.18);
+      transform: translateY(-3px);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
-    <div>test</div>
+
+  <!-- 顶部船只状态栏 -->
+  <div id="top-bar">
+    <div class="player-ships" id="left-player"></div>
+    <div class="player-ships" id="right-player"></div>
+  </div>
+
+  <!-- 游戏画布居中最大化 -->
+  <div id="canvas-wrapper">
+    <canvas id="game-canvas"></canvas>
+  </div>
+
+  <!-- 底部行动按钮 -->
+  <div id="action-bar">
+    <button class="action-btn" id="btn-move">移动</button>
+    <button class="action-btn" id="btn-attack">攻击</button>
+    <button class="action-btn" id="btn-skip">跳过</button>
+  </div>
+
+  <!-- 背景音乐（循环播放） -->
+  <audio id="bgm" loop>
+    <source src="./src/music/backgroundmusic.mp3" type="audio/mpeg">
+    您的浏览器不支持音频元素
+  </audio>
+
+  <script src="./functional/function.js"></script>
+  <script>
+    // ───────────────────────────────────────────────
+    //  game.html 主脚本 - 布局与初始化
+    // ───────────────────────────────────────────────
+
+    const canvas = document.getElementById('game-canvas');
+    const ctx    = canvas.getContext('2d');
+
+    // 自适应画布尺寸（正方形）
+    function resizeCanvas() {
+      const size = Math.min(
+        window.innerWidth  * 0.92,
+        window.innerHeight * 0.80
+      );
+      canvas.width = canvas.height = size;
+      drawMap(); // 重绘
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // 船只显示顺序：三、二、一、一、一、一、二、三
+    const boatLevels = [3, 2, 1, 1, 1, 1, 2, 3];
+
+    // 随机决定先手（>0.5 → 右侧先手）
+    const rightGoesFirst = Math.random() > 0.5;
+    let currentPlayer = rightGoesFirst ? 'right' : 'left';
+
+    console.log(`先手：${rightGoesFirst ? '右侧（绿色）' : '左侧（黄色）'}`);
+
+    // 生成左右玩家的船只按钮
+    function createShipButtons() {
+      const leftContainer  = document.getElementById('left-player');
+      const rightContainer = document.getElementById('right-player');
+
+      boatLevels.forEach((level, index) => {
+        const btn = document.createElement('div');
+        btn.className = 'ship-btn';
+        btn.innerHTML = `
+          <img src="./src/picture/boat${level}.png" alt="Lv${level}">
+          <div>${level}</div>
+        `;
+
+        // 前4个 → 左侧玩家，后4个 → 右侧玩家
+        if (index < 4) {
+          btn.classList.add(rightGoesFirst ? 'left-inactive' : 'left-active');
+          leftContainer.appendChild(btn);
+        } else {
+          btn.classList.add(rightGoesFirst ? 'right-active' : 'right-inactive');
+          rightContainer.appendChild(btn);
+        }
+      });
+    }
+
+    // 更新当前回合高亮
+    function updateTurnHighlight() {
+      const leftBtns  = document.querySelectorAll('#left-player .ship-btn');
+      const rightBtns = document.querySelectorAll('#right-player .ship-btn');
+
+      if (currentPlayer === 'left') {
+        leftBtns.forEach(b => {
+          b.classList.remove('left-inactive');
+          b.classList.add('left-active');
+        });
+        rightBtns.forEach(b => {
+          b.classList.remove('right-active');
+          b.classList.add('right-inactive');
+        });
+      } else {
+        leftBtns.forEach(b => {
+          b.classList.remove('left-active');
+          b.classList.add('left-inactive');
+        });
+        rightBtns.forEach(b => {
+          b.classList.remove('right-inactive');
+          b.classList.add('right-active');
+        });
+      }
+    }
+
+    // 简单绘制同心圆 + 通道（待 functional.js 完善）
+    function drawMap() {
+      if (!ctx) return;
+      const w = canvas.width, h = canvas.height;
+      const cx = w/2, cy = h/2;
+      const maxR = Math.min(w, h) / 2 * 0.9;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // 同心圆
+      ctx.strokeStyle = '#336699';
+      ctx.lineWidth = 2.5;
+      [0.35, 0.62, 0.88].forEach(ratio => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, maxR * ratio, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      // 中心点
+      ctx.fillStyle = '#ffeb3b';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 其他元素（船、港口、通道）由 function.js 中的 draw() 负责
+    }
+
+    // 行动按钮示例绑定（实际逻辑移到 function.js）
+    document.getElementById('btn-move').onclick = () => alert("移动功能待实现\n请在 function.js 中补充 move 逻辑");
+    document.getElementById('btn-attack').onclick = () => alert("攻击功能待实现");
+    document.getElementById('btn-skip').onclick = () => {
+      if (confirm("确定跳过回合？")) {
+        currentPlayer = currentPlayer === 'left' ? 'right' : 'left';
+        updateTurnHighlight();
+        alert("回合已跳过 → 切换至对方");
+      }
+    };
+
+    // ── 初始化 ────────────────────────────────────────
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      createShipButtons();
+      updateTurnHighlight();
+      drawMap();
+
+      // 尝试播放背景音乐（浏览器策略可能需要交互）
+      const audio = document.getElementById('bgm');
+      audio.play().catch(() => {
+        document.body.addEventListener('click', () => audio.play(), {once: true});
+      });
+    });
+  </script>
 </body>
 </html>
