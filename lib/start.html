@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>游戏 - 开始</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      /* 移除默认背景色，满足「无背景颜色」要求 */
+      background: none;
+      font-family: system-ui, -apple-system, sans-serif;
+      /* 让容器整体垂直方向更易控制 */
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* 顶部距离页面顶部 15% 高度 */
+      padding-top: 15vh;
+    }
+
+    .start-image {
+      /* 宽度60% */
+      width: 60%;
+      /* 修正笔误：50hv → 50vh（视口高度的50%） */
+      height: 50vh;
+      /* 保持图片比例，避免拉伸变形 */
+      object-fit: contain;
+      /* 实线黑色#000，2px边框（你写的2xp是笔误） */
+      border: 2px solid #000;
+      /* 无背景颜色 */
+      background: none;
+      /* 与按钮边距80px */
+      margin-bottom: 80px;
+      /* 确保水平居中（兜底） */
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .buttons {
+      /* flex水平布局 */
+      display: flex;
+      /* 间距40px */
+      gap: 40px;
+    }
+
+    .btn {
+      /* 内边距上下25px，左右60px */
+      padding: 25px 60px;
+      /* 字体24px加粗 */
+      font-size: 24px;
+      font-weight: bold;
+      border: none;
+      border-radius: 0; /* 移除默认圆角，保持简洁 */
+      cursor: pointer;
+      /* 鼠标悬浮轻微动效（可选，提升体验） */
+      transition: background-color 0.2s ease;
+      color: white;
+    }
+
+    /* PVP按钮：橙色#FF7F50 */
+    .btn-pvp {
+      background-color: #FF7F50;
+    }
+    .btn-pvp:hover {
+      background-color: #ff9f7a; /* 悬浮加深，提升体验 */
+    }
+
+    /* PVE按钮：蓝色#0000ff */
+    .btn-pve {
+      background-color: #0000ff;
+    }
+    .btn-pve:hover {
+      background-color: #1a1aff; /* 悬浮加深，提升体验 */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 核心图片：路径对应src/picture/start.jpg -->
+    <img 
+      src="./src/picture/start.jpg" 
+      alt="游戏开始画面" 
+      class="start-image"
+    >
+
+    <!-- 按钮区域 -->
+    <div class="buttons">
+      <!-- PVP按钮：跳转至game.html -->
+      <button class="btn btn-pvp" onclick="window.location.href='./game.html'">
+        PVP
+      </button>
+      <!-- PVE按钮：弹出提示框 -->
+      <button class="btn btn-pve" onclick="alert('正在开发')">
+        PVE
+      </button>
+    </div>
+  </div>
+</body>
+</html>

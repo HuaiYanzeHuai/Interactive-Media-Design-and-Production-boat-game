@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>游戏 - 开始</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 15vh;           /* 顶部距离页面顶部 15% 高度 */
+    }
+
+    .start-image {
+      width: 60%;
+      height: 50vh;
+      object-fit: contain;         /* 保持图片比例，不拉伸变形 */
+      border: 2px solid #000;
+      margin-bottom: 80px;         /* 与按钮区域的间距 */
+    }
+
+    .buttons {
+      display: flex;
+      gap: 40px;
+    }
+
+    .btn {
+      padding: 25px 60px;
+      font-size: 24px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    }
+
+    .btn-pvp {
+      background: #FF7F50;        /* 橙色 */
+    }
+
+    .btn-pvp:hover {
+      background: #ff9f7a;
+    }
+
+    .btn-pve {
+      background: #0000ff;        /* 纯蓝 */
+    }
+
+    .btn-pve:hover {
+      background: #1a1aff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <img 
+      src="./src/picture/start.jpg" 
+      alt="游戏开始画面" 
+      class="start-image"
+    >
+
+    <div class="buttons">
+      <button class="btn btn-pvp" onclick="window.location.href='./game.html'">
+        PVP
+      </button>
+
+      <button class="btn btn-pve" onclick="alert('正在开发')">
+        PVE
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>
